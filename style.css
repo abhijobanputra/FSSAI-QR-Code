@@ -983,8 +983,8 @@ footer a:hover {
     background-color: #000000;
 }
 
-/* Mirror the camera feed for intuitive framing */
-#reader-webcam video {
+/* Mirror the camera feed only for the front camera */
+#reader-webcam.mirrored video {
     transform: scaleX(-1);
     -webkit-transform: scaleX(-1);
 }
@@ -1078,4 +1078,37 @@ footer a:hover {
     font-size: 0.88rem;
     margin-bottom: 0.35rem;
     color: var(--text-secondary);
+}
+
+/* Additional Responsive Styling for Mobile Devices */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+    .glass-panel {
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+    .form-group-section {
+        padding: 1rem;
+    }
+    .fssai-logo-text {
+        font-size: 1.8rem;
+    }
+    .fssai-title {
+        font-size: 1.5rem;
+    }
+    .tab-btn {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+    .scanner-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .scanner-controls select,
+    .scanner-controls button {
+        width: 100%;
+        min-width: unset !important;
+    }
 }

@@ -217,6 +217,8 @@ function initTabListeners() {
             tabGeneratorBtn.setAttribute('aria-selected', 'false');
             sectionScanner.classList.add('active');
             sectionGenerator.classList.remove('active');
+            // Try loading camera list again now that tab is active
+            loadCameraDevices();
         }
     }
 }
@@ -567,6 +569,9 @@ function initScannerModule() {
         window.speechSynthesis.cancel();
         document.getElementById('tts-status-text').textContent = "Audio Readout Available";
     });
+
+    // Populate camera devices on load
+    loadCameraDevices();
 }
 
 // Camera Scanner Implementation
@@ -592,8 +597,32 @@ function startWebcamScanner() {
     try {
         state.html5QrScanner = new Html5Qrcode("reader-webcam", /* verbose= */ true);
         
+        // Get selected camera device ID
+        const cameraSelect = document.getElementById('camera-select');
+        const selectedDeviceId = cameraSelect.value;
+        
+        let cameraConfig = { facingMode: "environment" }; // default fallback (rear camera)
+        let isFrontCamera = false;
+        
+        if (selectedDeviceId) {
+            cameraConfig = { deviceId: { exact: selectedDeviceId } };
+            
+            // Check if selected camera label implies front-facing
+            const selectedOption = cameraSelect.options[cameraSelect.selectedIndex];
+            const labelText = selectedOption ? selectedOption.textContent.toLowerCase() : '';
+            isFrontCamera = labelText.includes('front') || labelText.includes('user') || labelText.includes('selfie') || labelText.includes('webcam');
+        }
+
+        // Apply visual mirroring only if it is a user-facing front camera
+        const webcamContainer = document.getElementById('reader-webcam');
+        if (isFrontCamera) {
+            webcamContainer.classList.add('mirrored');
+        } else {
+            webcamContainer.classList.remove('mirrored');
+        }
+
         state.html5QrScanner.start(
-            { facingMode: "environment" },
+            cameraConfig,
             {
                 fps: 15
                 // Scan full frame for maximum speed and scan reliability
@@ -606,7 +635,10 @@ function startWebcamScanner() {
             (errorMessage) => {
                 // Error handler: quiet logs
             }
-        ).catch(err => {
+        ).then(() => {
+            // Re-populate camera labels once permission has been granted
+            loadCameraDevices();
+        }).catch(err => {
             console.error("Camera scan failed to launch inside start promise:", err);
             cleanupScannerOnError();
         });
@@ -1192,5 +1224,43 @@ function copyTextToClipboard(text, btnElement, successMsg = 'Copied!') {
         }, 1500);
     }).catch(err => {
         console.error('Clipboard copy failed: ', err);
+    });
+}
+
+// Populate camera devices dropdown selection
+function loadCameraDevices() {
+    const cameraSelect = document.getElementById('camera-select');
+    if (!cameraSelect) return;
+
+    if (typeof Html5Qrcode === 'undefined') {
+        console.warn("Html5Qrcode library not loaded yet.");
+        return;
+    }
+
+    Html5Qrcode.getCameras().then(devices => {
+        const currentValue = cameraSelect.value;
+        cameraSelect.innerHTML = '';
+        
+        if (devices && devices.length > 0) {
+            devices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.id;
+                option.textContent = device.label || `Camera ${index + 1}`;
+                cameraSelect.appendChild(option);
+            });
+            
+            // Restore previous selection if valid
+            if (currentValue && Array.from(cameraSelect.options).some(opt => opt.value === currentValue)) {
+                cameraSelect.value = currentValue;
+            }
+        } else {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Default/Rear Camera';
+            cameraSelect.appendChild(option);
+        }
+    }).catch(err => {
+        console.warn("Could not retrieve camera list (permissions may be required):", err);
+        cameraSelect.innerHTML = '<option value="">Default/Rear Camera (Click Start to prompt)</option>';
     });
 }

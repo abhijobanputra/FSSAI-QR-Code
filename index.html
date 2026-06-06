@@ -330,14 +330,17 @@
 
                         <!-- Scanner Control Buttons -->
                         <div class="scanner-controls">
-                            <button class="btn-primary" id="btn-start-camera" style="width:auto; min-width:160px;">
+                            <select id="camera-select" aria-label="Select Camera Device" style="width: auto; min-width: 220px; padding: 0.75rem 1rem;">
+                                <option value="">Loading camera devices...</option>
+                            </select>
+                            <button class="btn-primary" id="btn-start-camera" style="width:auto; min-width:140px; margin-bottom:0;">
                                 🎥 Start Camera
                             </button>
-                            <button class="btn-secondary" id="btn-stop-camera" style="display:none;">
+                            <button class="btn-secondary" id="btn-stop-camera" style="display:none; width:auto; min-width:140px; margin-bottom:0;">
                                 ⏹️ Stop Camera
                             </button>
                         </div>
-                        
+                    </div>    
                         <!-- Camera Navigation Guidance Cues -->
                         <div class="camera-guidance-card" id="camera-guidance-info" style="display:none; width: 100%; max-width: 480px;">
                             <h4 style="color: var(--accent-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
