@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSSAI Compliant QR Code Generator and Reader</title>
+    <meta name="description" content="A FSSAI compliant QR Code Generator & Scanner with advanced text-to-speech accessibility features for visually challenged users.">
+    <link rel="stylesheet" href="style.css">
+    <!-- QR Code Generation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <!-- QR Code Scanning Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+</head>
+<body>
+
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+
+    <main class="container">
+        <!-- Accessibility Panel -->
+        <div class="accessibility-bar">
+            <button id="toggle-contrast" class="btn-accessibility" aria-label="Toggle High Contrast Mode">
+                <span class="icon">🌓</span> Toggle High Contrast
+            </button>
+            <button id="announce-page" class="btn-accessibility" aria-label="Read Page Info Aloud">
+                <span class="icon">🔊</span> Read Page Intro
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header>
+            <div class="fssai-badge-container">
+                <span class="fssai-logo-text">FSSAI Compliance QR</span>
+            </div>
+            <h1 class="fssai-title">Consumer Accessibility Labeling Tool</h1>
+            <p class="fssai-tagline">
+                Compliant with Food Safety and Standards (Labelling and Display) Regulations, 2020 & October 2023 Advisory (File No. RCD-01001/4/2021-Regulatory-FSSAI) for Visually Challenged Accessibility.
+            </p>
+        </header>
+
+        <!-- Main Navigation Tabs -->
+        <nav class="tabs-navigation" role="tablist">
+            <button class="tab-btn active" id="tab-generator-btn" role="tab" aria-selected="true" aria-controls="section-generator">
+                QR Code Generator
+            </button>
+            <button class="tab-btn" id="tab-scanner-btn" role="tab" aria-selected="false" aria-controls="section-scanner">
+                QR Code Scanner & Reader
+            </button>
+        </nav>
+
+        <!-- SECTION 1: GENERATOR -->
+        <section id="section-generator" class="app-section active" role="tabpanel" aria-labelledby="tab-generator-btn">
+            <!-- Preset Selector -->
+            <div class="preset-section glass-panel">
+                <h3 class="preset-title">
+                    <span>💡</span> Select a compliant food template to prepopulate form:
+                </h3>
+                <div class="presets-container" id="preset-buttons-container">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <div class="layout-grid">
+                <!-- Generator Inputs Form -->
+                <div class="glass-panel">
+                    <h2 class="panel-title">
+                        <span>📝</span> Food Label Specifications
+                    </h2>
+                    <form id="fssai-generator-form">
+                        
+                        <!-- Product Details Section -->
+                        <fieldset class="form-group-section">
+                            <legend class="form-group-title">🏷️ Product Identity</legend>
+                            <div class="input-grid-2">
+                                <div class="form-field">
+                                    <label for="product_name">Product Name (as on label)*</label>
+                                    <input type="text" id="product_name" required placeholder="e.g. Premium Milk Chocolate">
+                                </div>
+                                <div class="form-field">
+                                    <label for="brand_name">Brand Name (Optional)</label>
+                                    <input type="text" id="brand_name" placeholder="e.g. ChocoDelight">
+                                </div>
+                            </div>
+                            <div class="input-grid-2">
+                                <div class="form-field">
+                                    <label for="fssai_license">FSSAI License Number (14 Digits)*</label>
+                                    <input type="text" id="fssai_license" required pattern="[0-9]{14}" placeholder="e.g. 10021011000123" maxlength="14">
+                                </div>
+                                <div class="form-field">
+                                    <label for="veg_status">Veg / Non-Veg Indicator*</label>
+                                    <select id="veg_status" required>
+                                        <option value="veg">🟢 Veg (Vegetarian)</option>
+                                        <option value="nonveg">🟤 Non-Veg (Non-Vegetarian)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Dates and Shelf Life -->
+                        <fieldset class="form-group-section">
+                            <legend class="form-group-title">📅 Date Marking & Shelf Life</legend>
+                            <div class="input-grid-2">
+                                <div class="form-field">
+                                    <label for="date_manufacture">Date of Manufacture (DD-MM-YYYY)*</label>
+                                    <input type="date" id="date_manufacture" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="expiry_date">Expiry Date / Best Before Date*</label>
+                                    <input type="date" id="expiry_date" required>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label for="storage_conditions">Storage Conditions (Optional)</label>
+                                <input type="text" id="storage_conditions" placeholder="e.g. Store in a cool, dry place away from direct sunlight">
+                            </div>
+                        </fieldset>
+
+                        <!-- Ingredients & Allergens -->
+                        <fieldset class="form-group-section">
+                            <legend class="form-group-title">🌾 Ingredients & Allergens</legend>
+                            <div class="form-field">
+                                <label for="ingredients_list">Ingredients List (descending order of weight)*</label>
+                                <textarea id="ingredients_list" required placeholder="e.g. Sugar, Cocoa Butter, Milk Solids, Cocoa Solids, Emulsifiers (Lecithin)"></textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>Allergen Declaration (Select all that apply)*</label>
+                                <p class="text-secondary" style="font-size: 0.8rem; margin-bottom: 0.5rem;">
+                                    As per Food Safety Regulations, mandatory allergen warnings must be declared.
+                                </p>
+                                <div class="allergen-checkbox-grid">
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Gluten"> Gluten (Wheat, etc)</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Crustacea"> Crustaceans</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Milk"> Milk / Dairy</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Soy"> Soy / Soybeans</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Nuts"> Tree Nuts</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Peanuts"> Peanuts</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Fish"> Fish</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="Sulphites"> Sulphites (>= 10mg/kg)</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="allergens" value="None"> No Allergens</label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Nutritional Facts -->
+                        <fieldset class="form-group-section">
+                            <legend class="form-group-title">📊 Nutritional Information</legend>
+                            <div class="input-grid-2">
+                                <div class="form-field">
+                                    <label for="serving_size">Serving Size (Optional)</label>
+                                    <input type="text" id="serving_size" placeholder="e.g. 20g (Approx. 4 Blocks)">
+                                </div>
+                                <div class="form-field">
+                                    <label for="servings_per_pack">Servings per Package (Optional)</label>
+                                    <input type="text" id="servings_per_pack" placeholder="e.g. 5">
+                                </div>
+                            </div>
+                            
+                            <div class="nutrition-editor-container">
+                                <div class="nutrition-editor-header">
+                                    <span>Nutrient</span>
+                                    <span>Per 100g/ml*</span>
+                                    <span>Per Serve (% RDA)</span>
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_energy">Energy (kcal)</label>
+                                    <input type="number" step="any" id="nutri_energy" required placeholder="0">
+                                    <input type="text" id="nutri_energy_rda" placeholder="10%">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_protein">Protein (g)</label>
+                                    <input type="number" step="any" id="nutri_protein" required placeholder="0">
+                                    <input type="text" id="nutri_protein_rda" placeholder="-">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_carb">Carbohydrate (g)</label>
+                                    <input type="number" step="any" id="nutri_carb" required placeholder="0">
+                                    <input type="text" id="nutri_carb_rda" placeholder="-">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_sugars">Total Sugars (g)</label>
+                                    <input type="number" step="any" id="nutri_sugars" required placeholder="0">
+                                    <input type="text" id="nutri_sugars_rda" placeholder="-">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_added_sugars">Added Sugars (g)</label>
+                                    <input type="number" step="any" id="nutri_added_sugars" required placeholder="0">
+                                    <input type="text" id="nutri_added_sugars_rda" placeholder="15%">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_fat">Total Fat (g)</label>
+                                    <input type="number" step="any" id="nutri_fat" required placeholder="0">
+                                    <input type="text" id="nutri_fat_rda" placeholder="8%">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_sat_fat">Saturated Fat (g)</label>
+                                    <input type="number" step="any" id="nutri_sat_fat" required placeholder="0">
+                                    <input type="text" id="nutri_sat_fat_rda" placeholder="20%">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_trans_fat">Trans Fat (g)</label>
+                                    <input type="number" step="any" id="nutri_trans_fat" required placeholder="0">
+                                    <input type="text" id="nutri_trans_fat_rda" placeholder="0%">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_cholesterol">Cholesterol (mg)</label>
+                                    <input type="number" step="any" id="nutri_cholesterol" placeholder="0">
+                                    <input type="text" id="nutri_cholesterol_rda" placeholder="-">
+                                </div>
+                                <div class="nutrition-editor-row">
+                                    <label for="nutri_sodium">Sodium (mg)</label>
+                                    <input type="number" step="any" id="nutri_sodium" required placeholder="0">
+                                    <input type="text" id="nutri_sodium_rda" placeholder="5%">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Customer Care Details -->
+                        <fieldset class="form-group-section">
+                            <legend class="form-group-title">📞 Customer Care & Brand Details</legend>
+                            <div class="form-field">
+                                <label for="cc_address">Company Name & Address*</label>
+                                <textarea id="cc_address" required placeholder="e.g. ChocoDelight Foods Pvt. Ltd., Block A, Phase 1, Industrial Area, New Delhi - 110001"></textarea>
+                            </div>
+                            <div class="input-grid-2">
+                                <div class="form-field">
+                                    <label for="cc_email">Customer Care Email*</label>
+                                    <input type="email" id="cc_email" required placeholder="e.g. customercare@chocodelight.com">
+                                </div>
+                                <div class="form-field">
+                                    <label for="cc_phone">Customer Care Helpline Number*</label>
+                                    <input type="text" id="cc_phone" required placeholder="e.g. +91-11-23456789 or 1800-11-1234">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Submit Buttons -->
+                        <button type="submit" class="btn-primary" id="btn-generate">
+                            Generate Compliant QR Code
+                        </button>
+
+                    </form>
+                </div>
+
+                <!-- Preview Panel Sticky -->
+                <div class="preview-panel">
+                    <!-- QR Code Canvas Container -->
+                    <div class="glass-panel text-center" style="margin-bottom: 2rem;">
+                        <h3 class="panel-title" style="border:none; margin-bottom:0.5rem; justify-content:center;">
+                            🎯 QR Code Preview
+                        </h3>
+                        <p class="text-secondary" style="font-size:0.85rem; margin-bottom:1.5rem; text-align:center;">
+                            Scan to read, or download to print on packaging.
+                        </p>
+                        
+                        <div class="qr-output-container">
+                            <div id="qrcode-wrapper">
+                                <!-- QR Canvas rendered by JS -->
+                                <div class="qr-placeholder" id="qr-placeholder-element">
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="6" height="6" rx="1" />
+                                        <rect x="15" y="3" width="6" height="6" rx="1" />
+                                        <rect x="3" y="15" width="6" height="6" rx="1" />
+                                        <path d="M16 16h.01M20 20h.01M16 20h.01M20 16h.01M16 12h4v4M12 16v4h4" />
+                                    </svg>
+                                    <span>Generate QR code to preview</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-action-group">
+                            <button type="button" class="btn-secondary" id="btn-download-qr" disabled>
+                                📥 Download PNG
+                            </button>
+                            <button type="button" class="btn-secondary" id="btn-share-payload" disabled>
+                                📋 Copy JSON
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FSSAI Compliant JSON Output -->
+                    <div class="glass-panel">
+                        <h3 class="panel-title">
+                            <span>📡</span> Generated Payload Schema
+                        </h3>
+                        <div class="json-view-container">
+                            <button class="btn-copy-json" id="btn-copy-raw-json" aria-label="Copy raw JSON">Copy</button>
+                            <pre class="json-code" id="raw-json-output">{}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: SCANNER & READER -->
+        <section id="section-scanner" class="app-section" role="tabpanel" aria-labelledby="tab-scanner-btn">
+            <div class="layout-grid">
+                
+                <!-- Scanner Input Control Panel -->
+                <div class="glass-panel">
+                    <h2 class="panel-title">
+                        <span>📷</span> QR Scan Input
+                    </h2>
+                    
+                    <div class="scanner-viewport-container">
+                        <!-- Webcam Viewport -->
+                        <div class="scanner-video-wrapper" id="scanner-view-box">
+                            <div class="scanner-laser" id="scanner-laser-element" style="display:none;"></div>
+                            
+                            <!-- Scanner Target Frame Overlay -->
+                            <div class="scanner-overlay-frame" id="scanner-frame-element" style="display:none;">
+                                <div class="scanner-frame-corner top-left"></div>
+                                <div class="scanner-frame-corner top-right"></div>
+                                <div class="scanner-frame-corner bottom-left"></div>
+                                <div class="scanner-frame-corner bottom-right"></div>
+                                <div class="scanner-frame-text">Center FSSAI QR Code here</div>
+                            </div>
+                            
+                            <div id="reader-webcam" style="width: 100%;"></div>
+                            <div class="qr-placeholder" id="camera-placeholder" style="padding:4rem 1rem;">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                <p style="margin-top:1rem;">Camera scanner is currently inactive.</p>
+                            </div>
+                        </div>
+
+                        <!-- Scanner Control Buttons -->
+                        <div class="scanner-controls">
+                            <button class="btn-primary" id="btn-start-camera" style="width:auto; min-width:160px;">
+                                🎥 Start Camera
+                            </button>
+                            <button class="btn-secondary" id="btn-stop-camera" style="display:none;">
+                                ⏹️ Stop Camera
+                            </button>
+                        </div>
+                        
+                        <!-- Camera Navigation Guidance Cues -->
+                        <div class="camera-guidance-card" id="camera-guidance-info" style="display:none; width: 100%; max-width: 480px;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                💡 Alignment tips:
+                            </h4>
+                            <ul>
+                                <li><strong>Distance:</strong> Hold the code about 15 cm (6 inches) away.</li>
+                                <li><strong>Focus:</strong> Move it slowly <strong>closer</strong> or <strong>further back</strong>.</li>
+                                <li><strong>Lighting:</strong> Ensure the QR code is well lit without glare.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 1.5rem 0; color: var(--text-muted); position: relative;">
+                        <span style="background-color: var(--bg-primary); padding: 0 1rem; position: relative; z-index: 2;">OR UPLOAD LABEL IMAGE</span>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border-color); z-index: 1;"></div>
+                    </div>
+
+                    <!-- File Drag/Upload zone -->
+                    <div class="file-upload-zone" id="file-drop-zone">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem auto; display: block; color: var(--text-secondary);">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <p style="font-weight: 500;">Drag and drop packaging QR image, or click to upload</p>
+                        <p class="text-secondary" style="font-size:0.8rem; margin-top:0.4rem;">Supports PNG, JPG, JPEG, WebP</p>
+                        <input type="file" id="file-qr-input" accept="image/*">
+                    </div>
+                </div>
+
+                <!-- Scanner Results & Accessibility Dashboard -->
+                <div class="glass-panel">
+                    <div class="results-header-bar">
+                        <h2 class="panel-title" style="margin-bottom:0; border-bottom:none; padding-bottom:0;">
+                            <span>📢</span> Readout Dashboard
+                        </h2>
+                    </div>
+
+                    <!-- Audio TTS Controller -->
+                    <div class="tts-control-panel">
+                        <div class="tts-speaker-status">
+                            <span class="icon">🗣️</span>
+                            <span id="tts-status-text">Audio Readout Available</span>
+                        </div>
+                        <div class="tts-btn-group">
+                            <button class="btn-tts" id="btn-speak-now" disabled aria-label="Play auditory label readout">
+                                Play Audio
+                            </button>
+                            <button class="btn-tts btn-tts-stop" id="btn-stop-speech" disabled aria-label="Stop auditory readout">
+                                Stop
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Plain Text Accessibility Layout -->
+                    <div class="accessibility-view-card" id="accessibility-card">
+                        <div class="qr-placeholder" style="padding: 2rem 0;">
+                            <p>No scanned data to display.</p>
+                            <p class="text-secondary" style="font-size:0.85rem; margin-top:0.5rem;">
+                                Use camera scanning or file upload to load packaging information.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Validation Panel -->
+                    <div class="compliance-panel-section" style="margin-top: 2rem;">
+                        <h3 class="panel-title" style="font-size: 1.25rem;">
+                            🛡️ FSSAI Verification Checklist
+                        </h3>
+                        <ul class="compliance-checklist" id="compliance-checklist-container">
+                            <li class="compliance-item" style="border-left: 3px solid var(--text-muted);">
+                                <span class="compliance-icon">⏳</span>
+                                <div class="compliance-text">
+                                    <h5>Awaiting QR scan</h5>
+                                    <p>Standard checklist validations will run automatically upon decoding.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- JSON Endpoint Details -->
+                    <div class="json-endpoint-section" style="margin-top: 2rem;">
+                        <h3 class="panel-title" style="font-size: 1.25rem;">
+                            🌐 Scanned JSON Endpoint
+                        </h3>
+                        <div class="json-view-container">
+                            <button class="btn-copy-json" id="btn-copy-scanned-json" aria-label="Copy scanned JSON">Copy</button>
+                            <pre class="json-code" id="scanned-json-output">{}</pre>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>
+                <strong>FSSAI Compliance QR Code Tool</strong> &copy; 2026. Made in India. Compliance engine compliant with <br>
+                <em>Food Safety and Standards (Labelling and Display) Regulations, 2020</em>.
+            </p>
+        </footer>
+    </main>
+
+    <!-- Register Service Worker for PWA installation -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered.'))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
+        }
+    </script>
+    <!-- Core App Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
